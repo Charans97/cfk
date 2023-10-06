@@ -1,0 +1,2 @@
+username=kafkauser
+password=kafka-user

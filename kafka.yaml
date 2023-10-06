@@ -1,0 +1,71 @@
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Zookeeper
+metadata:
+  name: zookeeper
+  namespace: cs
+spec:
+  replicas: 3
+  image:
+    application: confluentinc/cp-zookeeper:7.4.0
+    init: confluentinc/confluent-init-container:2.6.0
+  dataVolumeCapacity: 10Gi
+  logVolumeCapacity: 10Gi
+  podTemplate:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsNonRoot: true
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Kafka
+metadata:
+  name: kafka
+  namespace: cs
+spec:
+  replicas: 3
+  image:
+    application: confluentinc/cp-server:7.4.0
+    init: confluentinc/confluent-init-container:2.7.0
+  dataVolumeCapacity: 10Gi
+  configOverrides:
+    server:
+      - confluent.cluster.link.enable=true
+      - authorizer.class.name=kafka.security.authorizer.AclAuthorizer
+  authorization:
+    type: simple        
+    superUsers:
+      - User:kafkauser
+      - Group:group1
+  listeners:
+    external:
+      authentication:
+        type: plain
+        jaasConfig:
+          secretRef: "acl"
+    internal:
+      authentication:
+        type: plain
+        jaasConfig:
+          secretRef: "acl"
+
+  podTemplate:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsNonRoot: true
+  metricReporter:
+    enabled: true
+#    bootstrapEndpoint: kafka.cs.svc.cluster.local:9092
+    authentication:
+        type: plain
+        jaasConfig:
+          secretRef: "acl2"

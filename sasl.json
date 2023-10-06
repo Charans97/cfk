@@ -1,0 +1,5 @@
+{
+"kafkauser": "kafka-secret" ,
+"producer": "producer-secret" ,
+"consumer": "consumer-secret"
+}
